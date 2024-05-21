@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Números Aleatorios</title>
+</head>
+<body>
+    <div id="inputs">
+        <label for="semilla">Semilla:</label>
+        <input type="number" id="semilla" name="semilla" min="0" step="1">
+        <label for="diasSimulados">Días Simulados:</label>
+        <input type="number" id="diasSimulados" name="diasSimulados" min="1" step="1">
+        <label for="nivelAgua">Nivel Inicial de Agua:</label>
+        <input type="number" id="nivelAgua" name="nivelAgua" min="0" step="1">
+        <button onclick="simular()">Simular</button>
+    </div>
+    <div id="numerosAleatorios"></div>
+    <div id="numerosAleatoriosNormalizados"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstat/1.7.1/jstat.min.js"></script>
+
+    <script>
+        function metodoCongruencialLineal(Xo, a, c, m, numerosAleatorios, numerosAleatoriosNormalizados, cantidadNumerosAleatorios) {
+            numerosAleatorios[0] = Xo;
+
+            for (let i = 1; i < cantidadNumerosAleatorios; i++) {
+                numerosAleatorios[i] = (a * numerosAleatorios[i - 1] + c) % m;
+            }
+
+            for (let i = 0; i < cantidadNumerosAleatorios; i++) {
+                numerosAleatoriosNormalizados[i] = Math.floor((numerosAleatorios[i] / m) * 10);
+            }
+        }
+
+        let tabla = document.createElement("table");
+    tabla.innerHTML = `
+        <thead>
+            <tr>
+                <th>Día</th>
+                <th>Variacion del agua por la ley</th>
+                <th>Cambio en Nivel de Agua</th>
+                <th>Nivel de Agua Actual</th>
+                <th>Compuertas abiertas</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    `;
+        function simular() {
+            // Obtener valores de los inputs
+            let semilla = parseInt(document.getElementById("semilla").value);
+            let diasSimulados = parseInt(document.getElementById("diasSimulados").value)*3;
+            let nivelAgua = parseInt(document.getElementById("nivelAgua").value);
+
+            // Valor de la semilla
+            let Xo = semilla;
+            // Término multiplicador
+            let a = 1664525;
+            // Término de incremento
+            let c = 1013904223;
+            // Parámetro del módulo
+            let m = Math.pow(2, 32);
+            // Arreglo para almacenar los números aleatorios
+            let numerosAleatorios = new Array(diasSimulados).fill(0);
+            // Arreglo para almacenar los números aleatorios normalizados
+            let numerosAleatoriosNormalizados = new Array(diasSimulados).fill(0);
+            let alturaMaxima = nivelAgua;
+            let nivelAnterior = nivelAgua;
+
+            // Llamada a la función
+            metodoCongruencialLineal(Xo, a, c, m, numerosAleatorios, numerosAleatoriosNormalizados, diasSimulados);
+
+            let nivelDelAgua = nivelAgua;
+            let compuerta1 = 0;
+            let compuerta2 = 0;
+            let compuerta3 = 0;
+            let compuerta4 = 0;
+            let alertasRojas = 0;
+            
+
+            // Función para agrupar los números normalizados de a tres 546879  0,546 0,879
+            function agruparNumerosConPrefijo(numeros, grupoSize) {
+                const grupos = [];
+                for (let i = 0; i < numeros.length; i += grupoSize) {
+                    let grupo = numeros.slice(i, i + grupoSize);
+                    let numeroAgrupado = "0." + grupo.join("");
+                    grupos.push(numeroAgrupado);
+                }
+                return grupos;
+            }
+            
+            // Llamada a la función para agrupar los números normalizados de a tres
+            let numerosAgrupados = agruparNumerosConPrefijo(numerosAleatoriosNormalizados, 3);
+            let ayuda //se guarda cuanto varia el nivel del agua
+            let compuertas=0 //numero de compuertas abiertas
+            for (let i = 0; i < diasSimulados / 3; i++) {
+                // Generar un número aleatorio normalizado entre 0 y 1
+                let numeroAleatorio = numerosAgrupados[i];
+                // Simular cambio en el nivel del agua
+                if (numeroAleatorio < 0.037) {
+                    ayuda=-3
+                    nivelDelAgua -= 3;
+                } else if (numeroAleatorio < 0.189 && numeroAleatorio >  0.037) {
+                    ayuda=-2
+                    nivelDelAgua -= 2;
+                } else if (numeroAleatorio < 0.225 && numeroAleatorio > 0.189) {
+                    ayuda=-1
+                    nivelDelAgua -= 1;
+                } else if (numeroAleatorio < 0.606 && numeroAleatorio > 0.225) {
+                    ayuda=0
+                    // No hay cambio, el nivel de agua permanece igual
+                } else if (numeroAleatorio < 0.660 && numeroAleatorio > 0.606) {
+                    ayuda=1
+                    nivelDelAgua += 1;
+                } else if (numeroAleatorio < 0.888 && numeroAleatorio > 0.660) {
+                    ayuda=2
+                    nivelDelAgua += 2;
+                } else {
+                    ayuda=3
+                    nivelDelAgua += 3;
+                }
+                // Verificar si se activa la alerta roja y cuales compuertas se encuentran abiertas
+                if (nivelDelAgua >= 45) {
+                    alertasRojas++;
+                    compuerta1++;
+                    compuerta2++;
+                    compuerta3++;
+                    compuerta4++;
+                    compuertas=4
+                    nivelDelAgua=nivelDelAgua-0.6*4
+                } else if (nivelDelAgua >= 40) {
+                    compuerta1++;
+                    compuerta2++;
+                    compuerta3++;
+                    compuerta4++;
+                    compuertas=4
+                    nivelDelAgua=nivelDelAgua-0.5*4
+                } else if (nivelDelAgua >= 32) {
+                    compuerta1++;
+                    compuerta2++;
+                    compuerta3++;
+                    compuertas=3
+                    nivelDelAgua=nivelDelAgua-0.5*3
+                } else if (nivelDelAgua >= 25) {
+                    compuerta1++;
+                    compuerta2++;
+                    compuertas=2
+                    nivelDelAgua=nivelDelAgua-0.5*2
+                } else if (nivelDelAgua >= 15) {
+                    compuerta1++;
+                    compuertas=1
+                    nivelDelAgua=nivelDelAgua-0.5
+                }
+
+                // Verificar si hay sequía
+                if (nivelDelAgua <= 2) {
+                    alert("¡Alerta de Sequía! La simulación se detiene.");
+                    break;
+                }
+                if (nivelDelAgua > alturaMaxima) {
+                    alturaMaxima = nivelDelAgua;
+                }
+                if (nivelDelAgua >= 52) {
+                    alert("¡Alerta! El nivel del agua ha superado la altura de la represa (52 metros).");
+                }
+                // Calcular el cambio en el nivel de agua
+                 let cambioEnNivelAgua = nivelDelAgua - nivelAnterior;
+                // Agregar una fila a la tabla
+                let fila = document.createElement("tr");
+                fila.innerHTML = `
+                    <td>${i + 1}</td>
+                    <td>${ayuda}</td>
+                    <td>${cambioEnNivelAgua}</td>
+                    <td>${nivelDelAgua}</td>
+                    <td>${compuertas}</td>
+                `;
+                tabla.querySelector("tbody").appendChild(fila);
+                nivelAnterior = nivelDelAgua;
+            }
+
+            function cumulativeChiSquaredValue(significanceLevel, degreesOfFreedom) {
+                // Calcular el valor acumulado de Chi-cuadrado utilizando jStat
+                return jStat.chisquare.inv(1 - significanceLevel, degreesOfFreedom);
+            }
+            function chiSquareTest(numeros, intervalos, error) {
+                // Calcular la frecuencia esperada
+                const frecuenciaEsperada = numeros.length / intervalos;
+                // Calcular la frecuencia observada
+                const frecuenciaObservada = new Array(intervalos).fill(0);
+                for (let numero of numeros) {
+                    frecuenciaObservada[numero]++;
+                }
+                // Calcular el estadístico chi-cuadrado
+                let chiCuadrado = 0;
+                for (let i = 0; i < intervalos; i++) {
+                    chiCuadrado += Math.pow(frecuenciaObservada[i] - frecuenciaEsperada, 2) / frecuenciaEsperada;
+                }
+                console.log(chiCuadrado)
+                // Calcular el valor crítico de chi-cuadrado para un nivel de significancia del 0.05
+                const valorCritico = cumulativeChiSquaredValue(error, intervalos - 1); // para intervalos - 1 = 9
+                // Evaluar el resultado del test
+                if (chiCuadrado < valorCritico) {
+                    return "Los números aleatorios parecen seguir una distribución uniforme (no se rechaza la hipótesis nula).";
+                } else {
+                    alert("Los números aleatorios no siguen una distribución uniforme");
+                    return "Los números aleatorios no siguen una distribución uniforme (se rechaza la hipótesis nula).";
+                }
+            }
+            console.log(numerosAleatorios)
+            console.log(numerosAleatoriosNormalizados)
+            console.log(numerosAgrupados)
+            // Llamada al test chi-cuadrado
+            const intervalos = 10; // número de intervalos
+            const resultadoTestChiCuadrado = chiSquareTest(numerosAleatoriosNormalizados, intervalos, 0.10);
+            // Mostrar la cantidad de veces que se abrió cada compuerta
+            let compuertasDiv = document.createElement("div");
+            compuertasDiv.innerHTML = `
+                <p>Compuerta 1 se abrió ${compuerta1} veces</p>
+                <p>Compuerta 2 se abrió ${compuerta2} veces</p>
+                <p>Compuerta 3 se abrió ${compuerta3} veces</p>
+                <p>Compuerta 4 se abrió ${compuerta4} veces</p>
+                <p>Alertas Rojas ${alertasRojas} veces</p>
+                <p>${resultadoTestChiCuadrado}</p>
+            `;
+            document.body.appendChild(compuertasDiv);
+            let alturaMaximaDiv = document.createElement("div");
+            alturaMaximaDiv.textContent = `Altura máxima alcanzada: ${alturaMaxima} metros`;
+            document.body.appendChild(alturaMaximaDiv);
+            document.body.appendChild(tabla);
+
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulación de Control de Calidad</title>
+</head>
+<body>
+    <h1>Simulación de Control de Calidad en una Fábrica de Placas de Video</h1>
+    <label for="probabilidad">Probabilidad de defecto en la producción (0-1):</label>
+    <input type="number" id="probabilidad" step="0.01" min="0" max="1" value="0.1">
+    <br>
+    <label for="tamaño_lote">Tamaño del lote:</label>
+    <input type="number" id="tamaño_lote" min="1" value="100">
+    <br>
+    <label for="tamaño_muestra">Tamaño de la muestra:</label>
+    <input type="number" id="tamaño_muestra" min="1" value="10">
+    <br>
+    <label for="limite_aceptacion">Límite de aceptación (0-1):</label>
+    <input type="number" id="limite_aceptacion" step="0.01" min="0" max="1" value="0.05">
+    <br>
+    <label for="cantidad_simulaciones">Cantidad de simulaciones:</label>
+    <input type="number" id="cantidad_simulaciones" min="1" value="5">
+    <br>
+    <label for="semilla">Semilla inicial para la generación de números aleatorios:</label>
+    <input type="number" id="semilla" min="0" value="12345">
+    <br>
+    <button onclick="simularControlCalidad()">Simular</button>
+    <br>
+    <div id="resultados"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstat/1.7.1/jstat.min.js"></script>
+
+    <script src="calidad.js"></script>
+</body>
+</html>
