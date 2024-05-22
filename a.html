@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulación de Control de Calidad</title>
+    <script>
+        function binomial(n, p) {
+            let count = 0;
+            for (let i = 0; i < n; i++) {
+                if (Math.random() < p) {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        function simular() {
+            const p = parseFloat(document.getElementById('probabilidad').value);
+            const n = parseInt(document.getElementById('tamaño_muestra').value);
+            const alpha = parseInt(document.getElementById('limite_aceptacion').value);
+
+            const defectuosas = binomial(n, p);
+            const estado = defectuosas <= alpha ? 'Aprobado' : 'Rechazado';
+
+            document.getElementById('resultado').innerText = `Defectuosas en la muestra: ${defectuosas}. Estado del lote: ${estado}.`;
+        }
+    </script>
+</head>
+<body>
+    <h1>Simulación de Control de Calidad en una Fábrica de Placas de Video</h1>
+    <label for="probabilidad">Probabilidad de defecto (p):</label>
+    <input type="number" id="probabilidad" step="0.01" min="0" max="1" value="0.05"><br>
+
+    <label for="tamaño_muestra">Tamaño de la muestra (n):</label>
+    <input type="number" id="tamaño_muestra" min="1" value="100"><br>
+
+    <label for="limite_aceptacion">Límite de aceptación (α):</label>
+    <input type="number" id="limite_aceptacion" min="0" value="5"><br>
+
+    <button onclick="simular()">Simular</button>
+
+    <p id="resultado"></p>
+</body>
+</html>

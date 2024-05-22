@@ -7,8 +7,19 @@ function metodoCongruencialLineal(Xo, a, c, m, numerosAleatorios, numerosAleator
     }
 
     for (let i = 0; i < cantidadNumerosAleatorios; i++) {
-        numerosAleatoriosNormalizados[i] = numerosAleatorios[i] / (m - 1);
+        numerosAleatoriosNormalizados[i] = Math.floor((numerosAleatorios[i] / m) * 10);
     }
+}
+
+// Función para agrupar los números normalizados de a tres
+function agruparNumerosConPrefijo(numeros, grupoSize) {
+    const grupos = [];
+    for (let i = 0; i < numeros.length; i += grupoSize) {
+        let grupo = numeros.slice(i, i + grupoSize);
+        let numeroAgrupado = "0." + grupo.join("");
+        grupos.push(numeroAgrupado);
+    }
+    return grupos;
 }
 
 // Función que genera un lote de placas de video con una probabilidad de defecto dada.
@@ -56,13 +67,16 @@ function chiSquareTest(numeros, intervalos, error) {
     for (let numero of numeros) {
         frecuenciaObservada[numero]++;
     }
+    console.log(frecuenciaObservada)
     // Calcular el estadístico chi-cuadrado
     let chiCuadrado = 0;
     for (let i = 0; i < intervalos; i++) {
         chiCuadrado += Math.pow(frecuenciaObservada[i] - frecuenciaEsperada, 2) / frecuenciaEsperada;
     }
     // Calcular el valor crítico de chi-cuadrado para un nivel de significancia del error proporcionado
-    const valorCritico = cumulativeChiSquaredValue(error, Math.pow(2, 10) - 1);
+    const valorCritico = cumulativeChiSquaredValue(error, intervalos - 1);
+    console.log(valorCritico)
+    console.log(chiCuadrado)
     // Evaluar el resultado del test
     if (chiCuadrado < valorCritico) {
         return "Los números aleatorios parecen seguir una distribución uniforme (no se rechaza la hipótesis nula).";
@@ -91,11 +105,9 @@ function simularControlCalidad() {
     let semilla = parseInt(document.getElementById("semilla").value);
 
     // Se llama al método congruencial lineal para generar los números aleatorios.
-    metodoCongruencialLineal(semilla, 1664525, 1013904223, Math.pow(2, 10), numerosAleatorios, numerosAleatoriosNormalizados, tamañoLote);
-    console.log(numerosAleatorios)
-    console.log(numerosAleatoriosNormalizados)
+    metodoCongruencialLineal(semilla, 1664525, 1013904223, Math.pow(2, 32), numerosAleatorios, numerosAleatoriosNormalizados, tamañoLote*2);
     // Realizamos el test de Chi-cuadrado para evaluar la distribución de los números aleatorios generados.
-    let resultadoChiCuadrado = chiSquareTest(numerosAleatorios, tamañoLote, 0.05);
+    let resultadoChiCuadrado = chiSquareTest(numerosAleatoriosNormalizados, 10, 0.05);
 
     // Añadimos los resultados del test de Chi-cuadrado al elemento HTML de resultados.
     resultados.innerHTML += `Resultado del test de Chi-cuadrado: ${resultadoChiCuadrado} <br>`;
@@ -103,18 +115,20 @@ function simularControlCalidad() {
     // Añadimos dos contadores para llevar el registro de cuántas veces se aprueba y cuántas veces se rechaza el lote.
     let vecesAprobado = 0;
     let vecesRechazado = 0;
-
+    // agrupar numeros
+    let numerosrandom=agruparNumerosConPrefijo(numerosAleatoriosNormalizados, 2)
+    console.log(numerosAleatoriosNormalizados)
+    console.log(numerosrandom)
     // Se itera sobre la cantidad de simulaciones especificada.
     for (let i = 0; i < cantidadSimulaciones; i++) {
         // Se genera un lote de placas de video utilizando los números aleatorios generados.
-        let lote = generarLote(probabilidadDefecto, tamañoLote, numerosAleatorios, numerosAleatoriosNormalizados);
+        let lote = generarLote(probabilidadDefecto, tamañoLote, numerosAleatorios, numerosrandom);
         // Se selecciona una muestra aleatoria del lote.
         let muestra = seleccionarMuestra(lote, tamañoMuestra);
         // Se inspecciona la muestra para calcular la proporción de placas defectuosas.
         let propDefectuosas = inspeccionarMuestra(muestra);
         // Se determina el estado del lote (aprobado o rechazado) según la proporción de placas defectuosas y el límite de aceptación.
         let estadoLote = determinarEstadoLote(propDefectuosas, limiteAceptacion);
-
         // Actualizamos los contadores según el estado del lote.
         if (estadoLote === "Aprobado") {
             vecesAprobado++;
