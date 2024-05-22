@@ -4,15 +4,15 @@ function metodoCongruencialLineal(Xo, a, c, m, numerosAleatorios, numerosAleator
 
     for (let i = 1; i < cantidadNumerosAleatorios; i++) {
         numerosAleatorios[i] = (a * numerosAleatorios[i - 1] + c) % m;
-    }
+    }//65415615641
 
     for (let i = 0; i < cantidadNumerosAleatorios; i++) {
         numerosAleatoriosNormalizados[i] = Math.floor((numerosAleatorios[i] / m) * 10);
-    }
-}
+    }//para obtener un solo numero entero hacemos: 0,12312 * 10 = 1,2312 con la funciuon floor solo tomamos el entero
+}//esto se hace para tomar solo valores entero
 
-// Función para agrupar los números normalizados de a tres
-function agruparNumerosConPrefijo(numeros, grupoSize) {
+// Función para agrupar dps de la coma los números enteros
+function agruparNumerosConPrefijo(numeros, grupoSize) {//numeros y cantidad de enteros
     const grupos = [];
     for (let i = 0; i < numeros.length; i += grupoSize) {
         let grupo = numeros.slice(i, i + grupoSize);
@@ -23,11 +23,11 @@ function agruparNumerosConPrefijo(numeros, grupoSize) {
 }
 
 // Función que genera un lote de placas de video con una probabilidad de defecto dada.
-function generarLote(probabilidadDefecto, tamañoLote, numerosAleatorios, numerosAleatoriosNormalizados) {
+function generarLote(probabilidadDefecto, tamañoLote, numerosAleatorios) {
     let lote = [];
     // Se itera sobre el tamaño del lote y se agrega 1 si la probabilidad de defecto es menor que un número aleatorio generado, de lo contrario se agrega 0.
     for (let i = 0; i < tamañoLote; i++) {
-        lote.push(numerosAleatoriosNormalizados[i] <= probabilidadDefecto ? 1 : 0);
+        lote.push(numerosAleatorios[i] <= probabilidadDefecto ? 1 : 0);
     }
     return lote; // Se devuelve el lote generado.
 }
@@ -35,50 +35,59 @@ function generarLote(probabilidadDefecto, tamañoLote, numerosAleatorios, numero
 // Esta función selecciona una muestra aleatoria de placas de video del lote.
 function seleccionarMuestra(lote, tamañoMuestra) {
     let muestra = [];
-    // Se itera sobre el tamaño de la muestra y se selecciona aleatoriamente una placa del lote.
+    // Se itera sobre el tamaño de la muestra y se selecciona aleatoriamente las placas del lote.
     for (let i = 0; i < tamañoMuestra; i++) {
         muestra.push(lote[Math.floor(Math.random() * lote.length)]);
     }
     return muestra; // Se devuelve la muestra seleccionada.
 }
 
-// Esta función inspecciona las placas de video de la muestra y calcula la proporción de placas defectuosas.
+// Esta función inspecciona las placas de video de la muestra y 
+//calcula la proporción de placas defectuosas.
 function inspeccionarMuestra(muestra) {
     // Se suma el número total de placas defectuosas en la muestra.
+    //reduce lo q hace es sumar los numeros que detecta, al representar el defecto con
+    //1 entonces suma todos los 1 que puede encontrar
     let totalDefectuosas = muestra.reduce((acc, val) => acc + val, 0);
-    // Se calcula la proporción de placas defectuosas dividiendo el número total de placas defectuosas entre el tamaño de la muestra.
+    // Se calcula la proporción de placas defectuosas dividiendo 
+    //el número total de placas defectuosas entre el tamaño de la muestra.
     return totalDefectuosas / muestra.length;
 }
 
-// Esta función determina si el lote es aprobado o rechazado según la proporción de placas defectuosas en la muestra y el límite de aceptación.
+// Esta función determina si el lote es aprobado o rechazado según la 
+//proporción de placas defectuosas en la muestra y el límite de aceptación.
 function determinarEstadoLote(propDefectuosas, limiteAceptacion) {
-    // Si la proporción de placas defectuosas es menor o igual al límite de aceptación, el lote es aprobado, de lo contrario es rechazado.
+    // Si la proporción de placas defectuosas es menor o igual 
+    //al límite de aceptación, el lote es aprobado, de lo contrario es rechazado.
     return propDefectuosas <= limiteAceptacion ? "Aprobado" : "Rechazado";
 }
+//esta funcion solo consigue el valor de la tabla de chi2
 function cumulativeChiSquaredValue(significanceLevel, degreesOfFreedom) {
     // Calcular el valor acumulado de Chi-cuadrado utilizando jStat
     return jStat.chisquare.inv(1 - significanceLevel, degreesOfFreedom);
 }
-function chiSquareTest(numeros, intervalos, error) {
+//Aca se calcula el chi2
+function chiSquareTest(numeros, k, error) {
     // Calcular la frecuencia esperada
-    const frecuenciaEsperada = numeros.length / intervalos;
+    // .length se cuenta la longitud de los numeros(longitud del arreglo)
+    const frecuenciaEsperada = numeros.length / k;
     // Calcular la frecuencia observada
-    const frecuenciaObservada = new Array(intervalos).fill(0);
+    const frecuenciaObservada = new Array(k).fill(0);
     for (let numero of numeros) {
-        frecuenciaObservada[numero]++;
+        frecuenciaObservada[numero]++;//aca se cuenta cuantas veces aparece cada numero
     }
     console.log(frecuenciaObservada)
     // Calcular el estadístico chi-cuadrado
-    let chiCuadrado = 0;
-    for (let i = 0; i < intervalos; i++) {
-        chiCuadrado += Math.pow(frecuenciaObservada[i] - frecuenciaEsperada, 2) / frecuenciaEsperada;
+    let hipotesisNula = 0;
+    for (let i = 0; i < k; i++) {
+        hipotesisNula += Math.pow(frecuenciaObservada[i] - frecuenciaEsperada, 2) / frecuenciaEsperada;
     }
     // Calcular el valor crítico de chi-cuadrado para un nivel de significancia del error proporcionado
-    const valorCritico = cumulativeChiSquaredValue(error, intervalos - 1);
-    console.log(valorCritico)
-    console.log(chiCuadrado)
+    const hipotesistabla = cumulativeChiSquaredValue(error, k - 1);
+    console.log(hipotesistabla)
+    console.log(hipotesisNula)
     // Evaluar el resultado del test
-    if (chiCuadrado < valorCritico) {
+    if (hipotesisNula < hipotesistabla) {
         return "Los números aleatorios parecen seguir una distribución uniforme (no se rechaza la hipótesis nula).";
     } else {
         return "Los números aleatorios no siguen una distribución uniforme (se rechaza la hipótesis nula).";
@@ -122,7 +131,7 @@ function simularControlCalidad() {
     // Se itera sobre la cantidad de simulaciones especificada.
     for (let i = 0; i < cantidadSimulaciones; i++) {
         // Se genera un lote de placas de video utilizando los números aleatorios generados.
-        let lote = generarLote(probabilidadDefecto, tamañoLote, numerosAleatorios, numerosrandom);
+        let lote = generarLote(probabilidadDefecto, tamañoLote,numerosrandom);
         // Se selecciona una muestra aleatoria del lote.
         let muestra = seleccionarMuestra(lote, tamañoMuestra);
         // Se inspecciona la muestra para calcular la proporción de placas defectuosas.
