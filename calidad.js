@@ -109,7 +109,10 @@ function simularControlCalidad() {
     // Se inicializan los arreglos para almacenar los números aleatorios generados por el método congruencial lineal.
     let numerosAleatorios = [];
     let numerosAleatoriosNormalizados = [];
-
+    if (tamañoMuestra < tamañoLote * 0.501) {
+        alert("El tamaño de la muestra debe ser al menos el 50.1% del tamaño del lote.");
+        return;
+    }
     // Se obtiene la semilla inicial del HTML.
     let semilla = parseInt(document.getElementById("semilla").value);
 
